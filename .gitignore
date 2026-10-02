@@ -1,0 +1,19 @@
+# Environment variables
+.env
+
+# Gmail OAuth credentials
+credentials.json
+token.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
