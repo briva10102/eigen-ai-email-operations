@@ -4,6 +4,8 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from email.mime.text import MIMEText
+import base64
 
 
 BASE_DIR = Path(__file__).resolve().parents[4]
@@ -11,9 +13,7 @@ BASE_DIR = Path(__file__).resolve().parents[4]
 CREDENTIALS_FILE = BASE_DIR / "credentials.json"
 TOKEN_FILE = BASE_DIR / "token.json"
 
-SCOPES = [
-    "https://www.googleapis.com/auth/gmail.readonly"
-]
+SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
 
 
 def get_gmail_credentials():
@@ -61,6 +61,38 @@ def fetch_message(service, message_id: str):
             userId="me",
             id=message_id,
             format="full"
+        )
+        .execute()
+    )
+    
+def send_email(
+    service,
+    to: str,
+    subject: str,
+    body: str,
+    thread_id: str | None = None,
+):
+    message = MIMEText(body)
+    message["to"] = to
+    message["subject"] = subject
+
+    raw_message = base64.urlsafe_b64encode(
+        message.as_bytes()
+    ).decode()
+
+    payload = {
+        "raw": raw_message
+    }
+
+    if thread_id:
+        payload["threadId"] = thread_id
+
+    return (
+        service.users()
+        .messages()
+        .send(
+            userId="me",
+            body=payload,
         )
         .execute()
     )
